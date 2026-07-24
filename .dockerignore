@@ -1,0 +1,14 @@
+node_modules
+dist
+.git
+*.md
+.gitignore
+.DS_Store
+node_modules/
+__pycache__
+*.pyc
+infrastructure/
+*.tfplan
+*.tfstate
+*.tfstate.backup
+test_skill.py

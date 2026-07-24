@@ -1,0 +1,1 @@
+vm_admin_ssh_public_key = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIG5vjYMC0UIU+kvbiuh5W7WQJz2a9a1YxXQJr5BmPI2o mk220@MANIKANDAN"
