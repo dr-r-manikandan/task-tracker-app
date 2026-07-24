@@ -1,14 +1,9 @@
-name: Deploy to Azure VM
+name: Deploy to Azure Container Apps
 
 on:
   push:
     branches: [main]
   workflow_dispatch:
-    inputs:
-      vm_host:
-        description: "VM public IP address"
-        required: true
-        type: string
 
 env:
   NODE_VERSION: "20"
@@ -31,38 +26,25 @@ jobs:
       - name: Build application
         run: npm run build
 
-      - name: Set VM host
-        id: vars
+      - name: Azure login
+        uses: azure/login@v2
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: ACR login
         run: |
-          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
-            echo "host=${{ inputs.vm_host }}" >> $GITHUB_OUTPUT
-          else
-            echo "host=${{ secrets.VM_HOST }}" >> $GITHUB_OUTPUT
-          fi
+          az acr login --name ${{ secrets.ACR_NAME }}
 
-      - name: Deploy via SSH
-        uses: appleboy/scp-action@v0.1.7
-        with:
-          host: ${{ steps.vars.outputs.host }}
-          username: ${{ secrets.SSH_USER }}
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
-          source: "dist/"
-          target: "/opt/task-tracker"
-          strip_components: 1
-          rm: true
+      - name: Build and push Docker image
+        run: |
+          IMAGE_TAG="${{ secrets.ACR_NAME }}.azurecr.io/task-tracker:${{ github.sha }}"
+          docker build -t $IMAGE_TAG .
+          docker push $IMAGE_TAG
+          echo "IMAGE_TAG=$IMAGE_TAG" >> $GITHUB_ENV
 
-      - name: Configure and restart nginx
-        uses: appleboy/ssh-action@v1.2.2
-        with:
-          host: ${{ steps.vars.outputs.host }}
-          username: ${{ secrets.SSH_USER }}
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
-          script: |
-            echo 'server {
-              listen 80;
-              root /opt/task-tracker;
-              index index.html;
-              location / { try_files $uri $uri/ /index.html; }
-            }' | sudo tee /etc/nginx/sites-available/task-tracker
-            sudo ln -sf /etc/nginx/sites-available/task-tracker /etc/nginx/sites-enabled/default
-            sudo systemctl restart nginx
+      - name: Deploy to Container Apps
+        run: |
+          az containerapp update \
+            --name ${{ secrets.CONTAINER_APP_NAME }} \
+            --resource-group ${{ secrets.AZURE_RESOURCE_GROUP }} \
+            --image ${{ env.IMAGE_TAG }}

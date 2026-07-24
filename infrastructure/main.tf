@@ -24,135 +24,82 @@ resource "random_pet" "suffix" {
 resource "azurerm_resource_group" "main" {
   name     = "rg-${var.project_name}-${random_pet.suffix.id}"
   location = var.location
-
-  tags = var.tags
+  tags     = var.tags
 }
 
-resource "azurerm_storage_account" "main" {
-  name                     = "st${var.project_name}${random_pet.suffix.id}"
-  resource_group_name      = azurerm_resource_group.main.name
-  location                 = azurerm_resource_group.main.location
-  account_tier             = "Standard"
-  account_replication_type = "LRS"
-
-  tags = var.tags
-}
-
-resource "azurerm_storage_container" "data" {
-  name                  = "data"
-  storage_account_name  = azurerm_storage_account.main.name
-  container_access_type = "private"
-}
-
-resource "azurerm_storage_container" "logs" {
-  name                  = "logs"
-  storage_account_name  = azurerm_storage_account.main.name
-  container_access_type = "private"
-}
-
-# --- VM Networking ---
-
-resource "azurerm_virtual_network" "main" {
-  name                = "vnet-${var.project_name}-${random_pet.suffix.id}"
+resource "azurerm_container_registry" "main" {
+  name                = "acr${random_pet.suffix.id}"
   resource_group_name = azurerm_resource_group.main.name
   location            = azurerm_resource_group.main.location
-  address_space       = var.vnet_address_space
+  sku                 = "Basic"
+  admin_enabled       = true
   tags                = var.tags
 }
 
-resource "azurerm_subnet" "main" {
-  name                 = "snet-${var.project_name}"
-  resource_group_name  = azurerm_resource_group.main.name
-  virtual_network_name = azurerm_virtual_network.main.name
-  address_prefixes     = var.subnet_address_prefixes
-}
-
-resource "azurerm_network_security_group" "main" {
-  name                = "nsg-${var.project_name}"
+resource "azurerm_log_analytics_workspace" "main" {
+  name                = "log-${var.project_name}-${random_pet.suffix.id}"
   resource_group_name = azurerm_resource_group.main.name
   location            = azurerm_resource_group.main.location
-  tags                = var.tags
-
-  security_rule {
-    name                       = "SSH"
-    priority                   = 100
-    direction                  = "Inbound"
-    access                     = "Allow"
-    protocol                   = "Tcp"
-    source_port_range          = "*"
-    destination_port_range     = "22"
-    source_address_prefixes    = var.allowed_ssh_cidrs
-    destination_address_prefix = "*"
-  }
-
-  security_rule {
-    name                       = "HTTP"
-    priority                   = 110
-    direction                  = "Inbound"
-    access                     = "Allow"
-    protocol                   = "Tcp"
-    source_port_range          = "*"
-    destination_port_range     = "80"
-    source_address_prefixes    = ["*"]
-    destination_address_prefix = "*"
-  }
-}
-
-resource "azurerm_public_ip" "main" {
-  name                = "pip-${var.project_name}-${random_pet.suffix.id}"
-  resource_group_name = azurerm_resource_group.main.name
-  location            = azurerm_resource_group.main.location
-  allocation_method   = "Static"
-  sku                 = "Standard"
+  sku                 = "PerGB2018"
+  retention_in_days   = 30
   tags                = var.tags
 }
 
-resource "azurerm_network_interface" "main" {
-  name                = "nic-${var.project_name}-${random_pet.suffix.id}"
-  resource_group_name = azurerm_resource_group.main.name
-  location            = azurerm_resource_group.main.location
-  tags                = var.tags
+resource "azurerm_container_app_environment" "main" {
+  name                       = "cae-${var.project_name}-${random_pet.suffix.id}"
+  resource_group_name        = azurerm_resource_group.main.name
+  location                   = azurerm_resource_group.main.location
+  log_analytics_workspace_id = azurerm_log_analytics_workspace.main.id
+  tags                       = var.tags
 
-  ip_configuration {
-    name                          = "internal"
-    subnet_id                     = azurerm_subnet.main.id
-    private_ip_address_allocation = "Dynamic"
-    public_ip_address_id          = azurerm_public_ip.main.id
+  lifecycle {
+    ignore_changes = [
+      log_analytics_workspace_id,
+    ]
   }
 }
 
-resource "azurerm_network_interface_security_group_association" "main" {
-  network_interface_id      = azurerm_network_interface.main.id
-  network_security_group_id = azurerm_network_security_group.main.id
-}
+resource "azurerm_container_app" "main" {
+  name                         = "ca-${var.project_name}"
+  resource_group_name          = azurerm_resource_group.main.name
+  container_app_environment_id = azurerm_container_app_environment.main.id
+  revision_mode                = "Single"
+  tags                         = var.tags
 
-# --- VM ---
+  template {
+    container {
+      name   = "app"
+      image  = "nginx:alpine"
+      cpu    = 0.25
+      memory = "0.5Gi"
 
-resource "azurerm_linux_virtual_machine" "main" {
-  name                  = "vm-${var.project_name}"
-  resource_group_name   = azurerm_resource_group.main.name
-  location              = azurerm_resource_group.main.location
-  size                  = var.vm_size
-  admin_username        = var.vm_admin_username
-  network_interface_ids = [azurerm_network_interface.main.id]
-  tags                  = var.tags
+      env {
+        name  = "NGINX_PORT"
+        value = "80"
+      }
+    }
 
-  admin_ssh_key {
-    username   = var.vm_admin_username
-    public_key = var.vm_admin_ssh_public_key
+    min_replicas = 1
+    max_replicas = 3
   }
 
-  os_disk {
-    caching              = "ReadWrite"
-    storage_account_type = "Standard_LRS"
+  ingress {
+    external_enabled = true
+    target_port      = 80
+    traffic_weight {
+      percentage      = 100
+      latest_revision = true
+    }
   }
 
-  source_image_reference {
-    publisher = "Canonical"
-    offer     = "ubuntu-server"
-    sku       = "22_04-lts-gen2"
-    version   = "latest"
+  registry {
+    server               = azurerm_container_registry.main.login_server
+    username             = azurerm_container_registry.main.admin_username
+    password_secret_name = "acr-password"
   }
 
-  custom_data = base64encode(templatefile("${path.module}/cloud-init.tpl", {}))
+  secret {
+    name  = "acr-password"
+    value = azurerm_container_registry.main.admin_password
+  }
 }
