@@ -1,0 +1,68 @@
+name: Deploy to Azure VM
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      vm_host:
+        description: "VM public IP address"
+        required: true
+        type: string
+
+env:
+  NODE_VERSION: "20"
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build application
+        run: npm run build
+
+      - name: Set VM host
+        id: vars
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "host=${{ inputs.vm_host }}" >> $GITHUB_OUTPUT
+          else
+            echo "host=${{ secrets.VM_HOST }}" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Deploy via SSH
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ steps.vars.outputs.host }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          source: "dist/"
+          target: "/opt/task-tracker"
+          strip_components: 1
+          rm: true
+
+      - name: Configure and restart nginx
+        uses: appleboy/ssh-action@v1.2.2
+        with:
+          host: ${{ steps.vars.outputs.host }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            echo 'server {
+              listen 80;
+              root /opt/task-tracker;
+              index index.html;
+              location / { try_files $uri $uri/ /index.html; }
+            }' | sudo tee /etc/nginx/sites-available/task-tracker
+            sudo ln -sf /etc/nginx/sites-available/task-tracker /etc/nginx/sites-enabled/default
+            sudo systemctl restart nginx
