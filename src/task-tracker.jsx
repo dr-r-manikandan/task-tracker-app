@@ -158,7 +158,7 @@ export default function TaskTracker() {
             </div>
             <div>
               <h1 className="text-xl font-semibold tracking-tight" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
-                Taskboard
+                TaskBoard
               </h1>
               <p className="text-sm text-slate-500">Frontend-only test harness · nothing here is saved</p>
             </div>
