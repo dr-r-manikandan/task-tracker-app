@@ -1,7 +1,7 @@
 """Pipeline: change -> detect -> infra check -> deploy"""
-import asyncio, sys, subprocess, json, aiohttp
+import asyncio, sys, subprocess, json, aiohttp, os
 
-TOKEN = "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"
+TOKEN = os.environ["GITHUB_TOKEN"]
 OWNER = "dr-r-manikandan"
 REPO  = "task-tracker-app"
 TF_DIR = r"C:\Users\mk220\Downloads\task-tracker-app\infrastructure"

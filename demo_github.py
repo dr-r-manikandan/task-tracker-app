@@ -1,9 +1,9 @@
 """Skill 2: GitHub Integration — repo info, detect changes"""
-import asyncio, sys, json
+import asyncio, os, sys, json
 sys.path.insert(0, r"C:\Users\mk220\Documents\skills\github-integration")
 from skill import GitHubSkill
 
-TOKEN = "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"
+TOKEN = os.environ["GITHUB_TOKEN"]
 OWNER = "dr-r-manikandan"
 REPO  = "task-tracker-app"
 

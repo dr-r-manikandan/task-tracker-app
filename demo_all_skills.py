@@ -1,7 +1,6 @@
 """Demo: Using all 3 skills for Terraform, GitHub, and Deployment."""
-import asyncio, sys, json
+import asyncio, os, sys, json
 
-import sys
 sys.path.insert(0, r"C:\Users\mk220\Documents\skills\terraform-infrastructure")
 import skill; TerraformSkill = skill.TerraformSkill; del skill; del sys.modules["skill"]; sys.path.pop(0)
 
@@ -11,7 +10,7 @@ import skill; GitHubSkill = skill.GitHubSkill; del skill; del sys.modules["skill
 sys.path.insert(0, r"C:\Users\mk220\Documents\skills\github-actions-deployment")
 import skill; DeploymentSkill = skill.DeploymentSkill; del skill; del sys.modules["skill"]; sys.path.pop(0)
 
-TOKEN = "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"
+TOKEN = os.environ["GITHUB_TOKEN"]
 OWNER = "dr-r-manikandan"
 REPO  = "task-tracker-app"
 TF_DIR = r"C:\Users\mk220\Downloads\task-tracker-app\infrastructure"

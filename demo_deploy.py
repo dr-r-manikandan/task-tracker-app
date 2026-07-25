@@ -1,9 +1,9 @@
 """Skill 3: GitHub Actions Deployment — trigger workflow via GitHub API"""
-import asyncio, sys, json
+import asyncio, os, sys, json
 sys.path.insert(0, r"C:\Users\mk220\Documents\skills\github-integration")
 import skill as gh
 
-TOKEN = "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"
+TOKEN = os.environ["GITHUB_TOKEN"]
 OWNER = "dr-r-manikandan"
 REPO  = "task-tracker-app"
 
