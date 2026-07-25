@@ -1,7 +1,7 @@
 {
   "version": 4,
   "terraform_version": "1.15.8",
-  "serial": 22,
+  "serial": 13,
   "lineage": "d9f5f0bb-afb5-47a5-2b60-739fbe3e53d2",
   "outputs": {
     "acr_admin_password": {
@@ -19,11 +19,11 @@
       "type": "string"
     },
     "container_app_name": {
-      "value": "ca-tasktracker",
+      "value": null,
       "type": "string"
     },
     "container_app_url": {
-      "value": "https://ca-tasktracker--wvtyc91.livelyisland-6f5b3dbf.westeurope.azurecontainerapps.io",
+      "value": null,
       "type": "string"
     },
     "location": {
@@ -38,134 +38,6 @@
   "resources": [
     {
       "mode": "managed",
-      "type": "azurerm_container_app",
-      "name": "main",
-      "provider": "provider[\"registry.terraform.io/hashicorp/azurerm\"]",
-      "instances": [
-        {
-          "schema_version": 0,
-          "attributes": {
-            "container_app_environment_id": "/subscriptions/3df411e6-c79f-4ce7-8a21-7efa5497da73/resourceGroups/rg-tasktracker-rationalmongoose/providers/Microsoft.App/managedEnvironments/cae-tasktracker-rationalmongoose",
-            "custom_domain_verification_id": "81909D4E3420E5E5B841381C02CA38D74D706411AFCC75D98F935FAED4047388",
-            "dapr": [],
-            "id": "/subscriptions/3df411e6-c79f-4ce7-8a21-7efa5497da73/resourceGroups/rg-tasktracker-rationalmongoose/providers/Microsoft.App/containerApps/ca-tasktracker",
-            "identity": [],
-            "ingress": [
-              {
-                "allow_insecure_connections": false,
-                "custom_domain": [],
-                "exposed_port": 0,
-                "external_enabled": true,
-                "fqdn": "ca-tasktracker.livelyisland-6f5b3dbf.westeurope.azurecontainerapps.io",
-                "ip_security_restriction": [],
-                "target_port": 80,
-                "traffic_weight": [
-                  {
-                    "label": "",
-                    "latest_revision": true,
-                    "percentage": 100,
-                    "revision_suffix": ""
-                  }
-                ],
-                "transport": "auto"
-              }
-            ],
-            "latest_revision_fqdn": "ca-tasktracker--wvtyc91.livelyisland-6f5b3dbf.westeurope.azurecontainerapps.io",
-            "latest_revision_name": "ca-tasktracker--wvtyc91",
-            "location": "westeurope",
-            "name": "ca-tasktracker",
-            "outbound_ip_addresses": [
-              "51.136.75.104"
-            ],
-            "registry": [
-              {
-                "identity": "",
-                "password_secret_name": "acr-password",
-                "server": "acrrationalmongoose.azurecr.io",
-                "username": "acrrationalmongoose"
-              }
-            ],
-            "resource_group_name": "rg-tasktracker-rationalmongoose",
-            "revision_mode": "Single",
-            "secret": [
-              {
-                "identity": "",
-                "key_vault_secret_id": "",
-                "name": "acr-password",
-                "value": "7sjVb7w7HwQdPTQVJWvodW3rLEYE3H8PMRlFnupVB4oGbabM2B63JQQJ99CGAC5RqLJEqg7NAAACAZCRAs3w"
-              }
-            ],
-            "tags": {
-              "Environment": "development",
-              "ManagedBy": "terraform",
-              "Project": "task-tracker"
-            },
-            "template": [
-              {
-                "azure_queue_scale_rule": [],
-                "container": [
-                  {
-                    "args": null,
-                    "command": null,
-                    "cpu": 0.25,
-                    "env": [
-                      {
-                        "name": "NGINX_PORT",
-                        "secret_name": "",
-                        "value": "80"
-                      }
-                    ],
-                    "ephemeral_storage": "1Gi",
-                    "image": "nginx:alpine",
-                    "liveness_probe": [],
-                    "memory": "0.5Gi",
-                    "name": "app",
-                    "readiness_probe": [],
-                    "startup_probe": [],
-                    "volume_mounts": []
-                  }
-                ],
-                "custom_scale_rule": [],
-                "http_scale_rule": [],
-                "init_container": [],
-                "max_replicas": 3,
-                "min_replicas": 1,
-                "revision_suffix": "",
-                "tcp_scale_rule": [],
-                "volume": []
-              }
-            ],
-            "timeouts": null,
-            "workload_profile_name": ""
-          },
-          "sensitive_attributes": [
-            [
-              {
-                "type": "get_attr",
-                "value": "custom_domain_verification_id"
-              }
-            ],
-            [
-              {
-                "type": "get_attr",
-                "value": "secret"
-              }
-            ]
-          ],
-          "identity_schema_version": 0,
-          "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjoxODAwMDAwMDAwMDAwLCJkZWxldGUiOjE4MDAwMDAwMDAwMDAsInJlYWQiOjMwMDAwMDAwMDAwMCwidXBkYXRlIjoxODAwMDAwMDAwMDAwfX0=",
-          "dependencies": [
-            "azurerm_container_app_environment.main",
-            "azurerm_container_registry.main",
-            "azurerm_log_analytics_workspace.main",
-            "azurerm_resource_group.main",
-            "random_pet.suffix"
-          ]
-        }
-      ]
-    },
-    {
-      "mode": "managed",
       "type": "azurerm_container_app_environment",
       "name": "main",
       "provider": "provider[\"registry.terraform.io/hashicorp/azurerm\"]",
@@ -175,7 +47,7 @@
           "attributes": {
             "custom_domain_verification_id": "81909D4E3420E5E5B841381C02CA38D74D706411AFCC75D98F935FAED4047388",
             "dapr_application_insights_connection_string": "",
-            "default_domain": "livelyisland-6f5b3dbf.westeurope.azurecontainerapps.io",
+            "default_domain": "greensky-50cd066f.westeurope.azurecontainerapps.io",
             "docker_bridge_cidr": "",
             "id": "/subscriptions/3df411e6-c79f-4ce7-8a21-7efa5497da73/resourceGroups/rg-tasktracker-rationalmongoose/providers/Microsoft.App/managedEnvironments/cae-tasktracker-rationalmongoose",
             "infrastructure_resource_group_name": "",
@@ -188,7 +60,7 @@
             "platform_reserved_cidr": "",
             "platform_reserved_dns_ip_address": "",
             "resource_group_name": "rg-tasktracker-rationalmongoose",
-            "static_ip_address": "50.85.56.164",
+            "static_ip_address": "51.105.178.169",
             "tags": {
               "Environment": "development",
               "ManagedBy": "terraform",
@@ -207,12 +79,7 @@
             ]
           ],
           "identity_schema_version": 0,
-          "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjoxODAwMDAwMDAwMDAwLCJkZWxldGUiOjE4MDAwMDAwMDAwMDAsInJlYWQiOjMwMDAwMDAwMDAwMCwidXBkYXRlIjoxODAwMDAwMDAwMDAwfSwic2NoZW1hX3ZlcnNpb24iOiIwIn0=",
-          "dependencies": [
-            "azurerm_log_analytics_workspace.main",
-            "azurerm_resource_group.main",
-            "random_pet.suffix"
-          ]
+          "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjoxODAwMDAwMDAwMDAwLCJkZWxldGUiOjE4MDAwMDAwMDAwMDAsInJlYWQiOjMwMDAwMDAwMDAwMCwidXBkYXRlIjoxODAwMDAwMDAwMDAwfSwic2NoZW1hX3ZlcnNpb24iOiIwIn0="
         }
       ]
     },
@@ -336,11 +203,7 @@
             ]
           ],
           "identity_schema_version": 0,
-          "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjoxODAwMDAwMDAwMDAwLCJkZWxldGUiOjE4MDAwMDAwMDAwMDAsInJlYWQiOjMwMDAwMDAwMDAwMCwidXBkYXRlIjoxODAwMDAwMDAwMDAwfSwic2NoZW1hX3ZlcnNpb24iOiIzIn0=",
-          "dependencies": [
-            "azurerm_resource_group.main",
-            "random_pet.suffix"
-          ]
+          "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjoxODAwMDAwMDAwMDAwLCJkZWxldGUiOjE4MDAwMDAwMDAwMDAsInJlYWQiOjMwMDAwMDAwMDAwMCwidXBkYXRlIjoxODAwMDAwMDAwMDAwfSwic2NoZW1hX3ZlcnNpb24iOiIzIn0="
         }
       ]
     },
