@@ -66,6 +66,14 @@ resource "azurerm_container_app" "main" {
   revision_mode                = "Single"
   tags                         = var.tags
 
+  lifecycle {
+    ignore_changes = [
+      template[0].container[0].image,
+      template[0].container[0].cpu,
+      template[0].container[0].memory,
+    ]
+  }
+
   template {
     container {
       name   = "app"

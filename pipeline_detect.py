@@ -12,9 +12,10 @@ async def main():
         "config": {"request_id": "pipe-detect"}
     }).execute()
     print(json.dumps(r))
-    if r.get("success"):
+    data = r.get("data")
+    if r.get("success") and data and "files" in data:
         seen = set()
-        for f in r["data"].get("files", []):
+        for f in data["files"]:
             cat = f.get("classification", "other")
             if cat not in seen:
                 seen.add(cat)

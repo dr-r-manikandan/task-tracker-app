@@ -1,7 +1,7 @@
 """Pipeline: change -> detect -> infra check -> deploy"""
 import asyncio, sys, subprocess, json, aiohttp, os
 
-TOKEN = os.environ["GITHUB_TOKEN"]
+TOKEN = os.environ.get("GITHUB_TOKEN", "")
 OWNER = "dr-r-manikandan"
 REPO  = "task-tracker-app"
 TF_DIR = r"C:\Users\mk220\Downloads\task-tracker-app\infrastructure"
@@ -28,11 +28,18 @@ async def main():
     async with aiohttp.ClientSession() as s:
         async with s.get(f"https://api.github.com/repos/{OWNER}/{REPO}/commits?per_page=1",
                          headers={"Authorization": f"Bearer {TOKEN}", "Accept": "application/vnd.github.v3+json"}) as resp:
-            commits = await resp.json()
-    sha = commits[0]["sha"] if isinstance(commits, list) and commits else "main"
-    msg = commits[0]["commit"]["message"] if sha != "main" else "N/A"
+            if resp.status != 200:
+                body = await resp.text()
+                print(f"  ! GitHub API error {resp.status}: {body[:200]}")
+                sha = "main"
+            else:
+                commits = await resp.json()
+                sha = commits[0]["sha"]
+                print(f"  MSG: {commits[0]['commit']['message']}")
     print(f"  SHA: {sha}")
-    print(f"  MSG: {msg}")
+    if sha == "main":
+        print("  ! Using 'main' as fallback — steps that need a real SHA will fail")
+    print()
 
     print()
     print("  " + "-"*56)
